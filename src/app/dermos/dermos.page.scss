@@ -1,0 +1,56 @@
+ion-content {
+  --background: #f6f8fa;
+}
+
+.search ion-item {
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.dermo-card {
+  margin: 12px;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+
+  ion-card-header {
+    background: #e9f2ff;
+    border-bottom: 1px solid #d0d0d0;
+    border-radius: 16px 16px 0 0;
+  }
+
+  ion-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d3557;
+  }
+
+  ion-card-subtitle {
+    font-size: 14px;
+    color: #457b9d;
+  }
+
+  ion-card-content {
+    font-size: 14px;
+    line-height: 1.5;
+
+    .info-block {
+      margin-bottom: 12px;
+      p {
+        margin: 4px 0;
+      }
+      strong {
+        color: #222;
+      }
+      em {
+        color: #999;
+        font-style: italic;
+      }
+    }
+
+    hr {
+      border: none;
+      border-top: 1px dashed #ccc;
+      margin: 10px 0;
+    }
+  }
+}

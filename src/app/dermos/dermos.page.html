@@ -1,0 +1,67 @@
+<ion-content>
+
+  <!-- 🔎 Barre de recherche -->
+  <div class="search ion-padding">
+    <ion-item lines="none" color="light">
+      <ion-input
+        placeholder="🔎 Rechercher..."
+        [(ngModel)]="searchText"
+        clear-input>
+      </ion-input>
+    </ion-item>
+  </div>
+
+  <!-- 📋 Liste des dermos -->
+  <ion-list *ngIf="filteredDermos.length > 0; else empty">
+
+    <ion-card *ngFor="let dermo of filteredDermos" class="dermo-card">
+      <ion-card-header>
+        <ion-card-title>👤 {{ dermo.intitule }}</ion-card-title>
+        <ion-card-subtitle>{{ dermo.username }}</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- ✅ Check-in -->
+        <div class="info-block">
+          <p><strong>📍Dernière localisation check-in détectée:</strong></p>
+          <p *ngIf="dermo.localisationCheckIn; else noLocIn">
+            {{ dermo.localisationCheckIn }}
+          </p>
+          <ng-template #noLocIn><em>❌ Non définie</em></ng-template>
+
+          <p><strong>🕒 Dernière Date check-in détectée:</strong></p>
+          <p *ngIf="dermo.dateCheckIn; else noDateIn">
+            {{ dermo.dateCheckIn | date:'dd/MM/yyyy HH:mm' }}
+          </p>
+          <ng-template #noDateIn><em>❌ Non définie</em></ng-template>
+        </div>
+
+        <hr />
+
+        <!-- ✅ Check-out -->
+        <div class="info-block">
+          <p><strong>📍 Dernière localisation check-out detectée :</strong></p>
+          <p *ngIf="dermo.localisationCheckOut; else noLocOut">
+            {{ dermo.localisationCheckOut }}
+          </p>
+          <ng-template #noLocOut><em>❌ Non définie</em></ng-template>
+
+          <p><strong>🕒 Dernière Date check-out detectée</strong></p>
+          <p *ngIf="dermo.dateCheckOut; else noDateOut">
+            {{ dermo.dateCheckOut | date:'dd/MM/yyyy HH:mm' }}
+          </p>
+          <ng-template #noDateOut><em>❌ Non définie</em></ng-template>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+  </ion-list>
+
+  <!-- Aucun résultat -->
+  <ng-template #empty>
+    <ion-text color="medium">
+      <p class="ion-padding">❌ Aucun dermo-conseiller trouvé.</p>
+    </ion-text>
+  </ng-template>
+
+</ion-content>

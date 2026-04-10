@@ -1,0 +1,32 @@
+<ion-content >
+  <ion-grid>
+    <ion-row class="ion-align-items-center">
+      <ion-col size="12" class="loading-content">
+        <div class="loading-wrapper">
+
+          <!-- 🔄 Icône d'attente animée -->
+          <div class="loading-icon">
+            <ion-spinner name="crescent" color="primary"></ion-spinner>
+          </div>
+
+          <!-- 📌 Texte animé avec effet de battement -->
+          <p class="loading-text">
+            ⏳ {{ progressText }} ⏳
+          </p>
+
+          <!-- 📊 Barre de progression fluide -->
+          <ion-progress-bar [value]="progress / 100" class="animated-progress"></ion-progress-bar>
+
+          <!-- ❌ Message d'erreur + bouton de réessai -->
+          <div *ngIf="isError" class="error-container">
+            <ion-icon name="warning-outline" color="danger" size="large"></ion-icon>
+            <p class="error-text">❌ Erreur lors du chargement.</p>
+            <ion-button color="danger" expand="full" (click)="retry()">🔄 Réessayer</ion-button>
+          </div>
+
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>

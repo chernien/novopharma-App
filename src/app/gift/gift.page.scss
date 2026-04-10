@@ -1,0 +1,139 @@
+/* 🔍 Barre de recherche améliorée */
+.search ion-item {
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    transition: all 0.3s ease-in-out;
+    background-color: #ffffff;
+  }
+  
+  .search ion-item:hover {
+    transform: scale(1.03);
+  }
+  
+  .search ion-icon {
+    margin-right: 16px;
+    color: var(--ion-color-primary);
+  }
+  
+  /* 📦 Liste des articles */
+  ion-list {
+    padding-top: 10px;
+  }
+  
+  .artcile-item {
+    padding: 15px;
+    --background: var(--ion-color-light);
+    --border-color: var(--ion-color-light);
+    --color: var(--ion-color-dark);
+    --min-height: 90px;
+    margin-bottom: 12px;
+    box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .artcile-item:hover {
+    transform: translateY(-3px);
+  }
+  
+  // .artcile-item ion-row {
+  //   display: flex;
+  //   align-items: center;
+  //   gap: 10px;
+  // }
+  
+  .artcile-item ion-label h2 {
+    font-weight: 700;
+    margin-bottom: 5px;
+    font-size: 1rem;
+    // color: var(--ion-color-tertiary);
+  }
+  .center-button {
+    display: flex;
+    justify-content: center; /* 🔹 Centre horizontalement */
+    align-items: center; /* 🔹 Centre verticalement si nécessaire */
+  }
+  /* 📋 Champs de quantité */
+  .article-qte {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin: 3px;
+    background-color: #f9f9f9;
+    transition: all 0.2s ease-in-out;
+    max-height: 44px;
+    padding: 8px;
+    font-size: 13px;
+    text-align: center;
+  
+  }
+  
+  .article-qte:focus-within {
+    background-color: #ffffff;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* 📅 Gestion des dates */
+  .date-item {
+    margin: 5px 0;
+    padding: 5px;
+  }
+  
+  ion-datetime-button {
+    width: 100%;
+  }
+  
+  /* ⚠️ Messages d'erreur améliorés */
+  .error-message {
+    color: #ff4d4d;
+    font-weight: 600;
+    font-size: 12px;
+    margin-top: 6px;
+    padding: 6px;
+    border-radius: 6px;
+    text-align: center;
+    // background-color: rgba(255, 77, 77, 0.1);
+  }
+  
+  /* 🛒 Bouton Ajouter au Panier */
+  ion-button {
+    font-weight: bold;
+    text-transform: none;
+    border-radius: 8px;
+    transition: background 0.3s ease-in-out;
+  }
+  
+  ion-button[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  ion-button:hover:not([disabled]) {
+    background-color: var(--ion-color-primary-tint);
+  }
+  
+  /* 🖼️ Images des articles */
+  .artcile-item img {
+    width: 100%;
+    max-width: 100px;
+    height: auto;
+    border-radius: 6px;
+    object-fit: cover;
+    box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* 🎭 Animation pour les articles lorsqu'ils apparaissent */
+  .artcile-item {
+    animation: fadeIn 0.4s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  

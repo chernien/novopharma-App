@@ -1,0 +1,142 @@
+.search ion-item {
+    box-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.09);
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.search ion-item:hover {
+    transform: scale(1.02);
+}
+
+.search ion-icon {
+    margin-right: 16px;
+}
+
+
+.article-qte {
+    border: 1px solid #edeef0;
+    border-radius: 10px;
+    padding: 5px;
+    margin: 2px;
+    background-color: #f9f9f9;
+}
+
+.date-item {
+    margin: 0;
+    padding: 0;
+}
+
+/* 🌟 HEADER */
+ion-toolbar {
+    --background: var(--ion-color-light);
+    // --color: white;
+}
+
+.notification,
+.filter {
+    font-size: 1.2rem;
+}
+
+/* 📦 ARTICLES */
+.article-item {
+    padding: 12px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.1);
+    margin: 8px 0;
+    transition: transform 0.2s ease-in-out;
+}
+
+.article-item:hover {
+    transform: scale(1.02);
+}
+
+/* 🔤 TITRES */
+.article-title {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+/* 🔲 INPUTS */
+.article-qte {
+    background: var(--ion-color-light);
+    border-radius: 8px;
+    padding: 5px;
+    text-align: center;
+}
+
+/* ❌ MESSAGES D'ERREUR */
+.error-message {
+    color: var(--ion-color-danger);
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    padding-top: 5px;
+}
+
+/* 📅 DATES PROCHES */
+.date-section {
+    padding: 3px;
+    margin-top: 2px;
+    background: #f0f8ff;
+    border-radius: 10px;
+}
+
+.date-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--ion-color-primary);
+}
+
+.date-item {
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    font-size: 0.7rem;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 🔘 BOUTONS CENTRÉS */
+.center-buttons {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+}
+
+/* 🟢 BOUTON VALIDER */
+
+
+/* 📏 MARGES OPTIMISÉES POUR TABLETTES */
+@media (min-width: 768px) {
+    .article-item {
+        margin: 12px;
+    }
+
+    .search {
+        padding: 15px;
+    }
+
+    .cart-items {
+        padding: 15px;
+    }
+}
+
+/* 🌟 Message panier vide */
+.empty-cart {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.2rem;
+    color: var(ion-color-primary);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: var(ion-color-primary);
+}
+
+.empty-text {
+    margin-top: 10px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(ion-color-dark);
+}

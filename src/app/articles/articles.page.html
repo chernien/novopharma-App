@@ -1,0 +1,231 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <img src="../../assets/logo_NOVOPHARMA_H-1-mini.png" width="64" alt="Logo Novopharma" />
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button class="notification" aria-label="Voir le panier" routerLink="/tabs/cart">
+        <ion-icon name="cart-outline" color="primary"></ion-icon>
+        <!-- Affichage de la quantité du panier -->
+        <ion-badge *ngIf="cartQuantity || 0 > 0" color="danger">{{ cartQuantity }}</ion-badge>
+      </ion-button>
+      <ion-button class="filter" aria-label="Favoris" routerLink="/tabs/recommande">
+        <ion-icon name="star" color="warning"></ion-icon>
+      </ion-button>
+      <ion-button class="filter" aria-label="Refresh" (click)="refreshPage()">
+  <ion-icon name="refresh" color="secondary"></ion-icon>
+</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- 🚨 Bandeau d'avertissement si panier plein -->
+  <ion-toolbar color="warning" *ngIf="cartFull">
+    <ion-title class="ion-text-center" style="font-size:14px">
+      ⚠️ Votre panier est plein ({{cartQuantity}} articles).
+    </ion-title>
+  </ion-toolbar>
+
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  <div class="search ion-padding">
+
+    <ion-item lines="none">
+      <!-- <ion-icon name="search-outline" slot="start"></ion-icon> -->
+      <ion-input placeholder="🔎 Rechercher un article..." [ngModel]="searchText$ | async"
+        (ionInput)="onSearchInput($event)" clear-input>
+      </ion-input>
+
+    </ion-item>
+  </div>
+  <!-- ⚠️ Alerte si aucune pharmacie n'est sélectionnée -->
+  <ion-item lines="none" style="margin:20px" *ngIf="!selectedPharmacyJSON && !(isLoading$ | async) && !(filteredArticles$ | async)?.length"
+  class="center-content article-item">
+  <ion-col size="12" style="text-align: center;">
+    <ion-button routerLink="/tabs/pharmacie">
+      <ion-icon name="refresh-outline" slot="start"></ion-icon>&nbsp; Choisir une Pharmacie
+    </ion-button>
+    <br>
+    <ion-text> ⚠️ Veuillez choisir une pharmacie pour afficher les articles.</ion-text>
+  </ion-col>
+</ion-item>
+
+
+  <!-- 🔄 Skeleton Loader en cas de chargement -->
+  <ion-list *ngIf="isLoading$ | async" class="ion-padding">
+    <ion-item *ngFor="let i of [1,2,3,4]" lines="none">
+      <ion-thumbnail slot="start">
+        <ion-skeleton-text animated style="width: 80px; height: 80px;"></ion-skeleton-text>
+      </ion-thumbnail>
+      <ion-label>
+        <h2><ion-skeleton-text animated style="width: 60%"></ion-skeleton-text></h2>
+        <p><ion-skeleton-text animated style="width: 40%"></ion-skeleton-text></p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <!-- 🏪 Liste des articles affichée après le chargement -->
+  <ion-list class="ion-padding" *ngIf="selectedPharmacyJSON && !(isLoading$ | async)">
+    <ion-grid>
+      <ion-row class="ion-align-items-center ion-justify-content-center article-item"
+        *ngFor="let article of (filteredArticles$ | async); let i = index; trackBy: trackByFn">
+
+
+        <!-- 🖼 Image + Designation -->
+        <ion-col size="12" size-md="12">
+          <ion-item class="article-header" lines="none">
+            <!-- Image -->
+            <ion-thumbnail slot="start" class="image-container">
+              <img *ngIf="article.ar_photo !== ''" [src]="'https://novopharma.tn/api/MbArticle/image/' + article?.arRef"
+                alt="Image article" loading="lazy" class="article-image" />
+              <img *ngIf="article.ar_photo === ''" src="../../../assets/images/365.png" alt="🖼 Image par défaut"
+                loading="lazy" class="article-image" />
+            </ion-thumbnail>
+
+            <!-- Designation -->
+            <ion-label class="article-label">
+              <h2 class="article-title"><ion-icon name="star" *ngIf="article?.recommande === 'Oui'"
+                  color="warning"></ion-icon> {{ article?.arDesign }}
+              </h2>
+            </ion-label>
+          </ion-item>
+        </ion-col>
+
+        <!-- 📦 Stock Disponible & Quantité Vendue (6-6 sur mobile) -->
+        <ion-col size="12">
+          <ion-grid>
+            <ion-row class="ion-align-items-center">
+              <ion-col size="6" size-md="6">
+                <ion-input class="article-qte" type="number" placeholder="Stock Disponible"
+                  [(ngModel)]="article.stockQuantity" [max]="article?.aS_QteSto" [disabled]="cartFull"
+                  (ionChange)="checkStockQuantity(article)">
+                </ion-input>
+              </ion-col>
+
+              <ion-col size="6" size-md="6">
+                <ion-input class="article-qte" type="number" placeholder="Quantité Vendue"
+                  [(ngModel)]="article.soldQuantity" [max]="article?.stockQuantity" [disabled]="cartFull"
+                  (ionChange)="checkSoldQuantity(article)">
+                
+                </ion-input>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-col>
+       <!-- ⚠️ Messages d'erreur -->
+<ion-col size="12" class="ion-align-items-center ion-justify-content-center">
+  <!-- Commenté pour permettre stockQuantity = 0 -->
+  <!-- <ion-text *ngIf="article.stockQuantity <=0" class="error-message">
+    ⚠️ La quantité en stock est nulle ! <br>
+  </ion-text> --> 
+  <!-- Commenté pour permettre soldQuantity > stockQuantity -->
+  <ion-text *ngIf="article.soldQuantity > article.stockQuantity" class="error-message">
+    ⚠️ La quantité vendue ne peut pas dépasser la quantité en stock ! <br>
+  </ion-text>
+  <!-- Commenté pour permettre qte1 + qte2 + qte3 > stockQuantity -->
+   <ion-text *ngIf="((article.qte1 ?? 0) + (article.qte2 ?? 0) + (article.qte3 ?? 0)) > article.stockQuantity"
+    class="error-message">
+    ⚠️ La quantité ne peut pas dépasser la quantité disponible initialement ! <br>
+  </ion-text>
+  <ion-text>📆 Dates Proches :</ion-text>
+</ion-col> 
+
+        <ion-col size="12">
+          <ion-grid>
+            <ion-row class="ion-align-items-center">
+
+              <!-- 📆 Date -->
+              <ion-col size="5" size-md="4">
+                <input class="article-qte" type="date" [(ngModel)]="article.datePeremtion" lang="fr" />
+
+              </ion-col>
+
+              <!-- 🔢 Quantité -->
+              <ion-col size="4" size-md="3">
+                <ion-input class="article-qte" [(ngModel)]="article.qte1" type="number" placeholder=" Qte 1" (ionChange)="DPQteControl(article)">
+                </ion-input> </ion-col>
+
+              <!-- ➕ Bouton Ajouter -->
+              <ion-col size="3" size-md="2" class="ion-text-center">
+                <ion-button color="primary" (click)="showNextSet(i)" [disabled]="visibleFields[i] >= 2" expand="block">
+                  <ion-icon name="add-circle-outline"></ion-icon>
+                </ion-button>
+              </ion-col>
+
+            </ion-row>
+            <ion-row class="ion-align-items-center" *ngIf="visibleFields[i] >= 1">
+
+
+              <!-- 📆 Date -->
+              <ion-col size="5" size-md="4">
+                <input class="article-qte" type="date" lang="fr" [(ngModel)]="article.datePeremtion1" />
+              </ion-col>
+
+              <!-- 🔢 Quantité -->
+              <ion-col size="4" size-md="3">
+                <ion-input class="article-qte" [(ngModel)]="article.qte2" type="number" placeholder=" Qte 2" (ionChange)="DPQteControl(article)">
+                </ion-input> </ion-col>
+
+              <!-- ➕ Bouton Ajouter -->
+              <ion-col size="3" size-md="2" class="ion-text-center">
+                <ion-button color="primary" (click)="showNextSet(i)" [disabled]="visibleFields[i] >= 2" expand="block">
+                  <ion-icon name="add-circle-outline"></ion-icon>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+            <ion-row class="ion-align-items-center" *ngIf="visibleFields[i] >= 3">
+
+
+              <!-- 📆 Date -->
+              <ion-col size="5" size-md="4">
+                <input class="article-qte" lang="fr" type="date" [(ngModel)]="article.datePeremtion2" />
+              </ion-col>
+
+              <!-- 🔢 Quantité -->
+              <ion-col size="4" size-md="3">
+                <ion-input class="article-qte" [(ngModel)]="article.qte3" type="number" placeholder=" Qte 3" (ionChange)="DPQteControl(article)">
+                </ion-input>
+              </ion-col>
+              <!-- ➕ Bouton Ajouter -->
+              <ion-col size="3" size-md="2" class="ion-text-center">
+                <ion-button color="primary" [disabled]="visibleFields[i] >= 2" expand="block">
+                  <ion-icon name="add-circle-outline"></ion-icon>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-col>
+
+        <!-- 📆 Date 2 et 3 (Cachées par défaut) -->
+
+        <!-- 🛒 Bouton Ajouter au Panier -->
+        <ion-col size="12" class="center-button">
+          <ion-button
+          [disabled]="cartFull || article.stockQuantity < 0 || article.soldQuantity < 0 || article.soldQuantity > article.stockQuantity || ((article.qte1 ?? 0) + (article.qte2 ?? 0) + (article.qte3 ?? 0)) > article.stockQuantity"          (click)="addToCart(
+              article, 
+              article.stockQuantity, 
+              article.soldQuantity, 
+              article.datePeremtion, 
+              article.numSerie, 
+              article.datePeremtion1, 
+              article.numSerie1, 
+              article.datePeremtion2, 
+              article.numSerie2, 
+              article.qte1, 
+              article.qte2, 
+              article.qte3
+            )">
+          <ion-icon name="cart"></ion-icon>&nbsp; Ajouter au Panier
+        </ion-button>
+        </ion-col>
+
+      </ion-row>
+    </ion-grid>
+
+
+
+  </ion-list>
+  
+
+</ion-content>

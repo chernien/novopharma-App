@@ -1,0 +1,27 @@
+ion-tab-bar {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
+  background: #fff;
+  --box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 20px 20px 0 0;
+  z-index: 10; /* pour qu’elle soit au-dessus du contenu */
+  background-color: var(--ion-color-light, #fff);
+
+}
+
+ion-content {
+  --padding-bottom: calc(env(safe-area-inset-bottom) + 60px);
+}
+
+  
+  ion-tab-button {
+    --color-selected: var(--ion-color-primary); /* Couleur de l'icône sélectionnée avec la couleur primaire */
+    --color: var(--ion-color-medium); /* Couleur des icônes non sélectionnées avec une teinte moyenne */
+    transition: all 0.3s ease-in-out; /* Transition douce pour les animations */
+  }
+  
+  ion-tab-button:hover {
+    transform: scale(1.05); /* Agrandissement léger au survol pour un effet interactif */
+  }
+  
+  
+  

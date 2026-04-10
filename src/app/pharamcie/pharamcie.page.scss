@@ -1,0 +1,152 @@
+
+
+/* Content */
+ion-content {
+  --ion-background-color: #FFFFFF !important;
+  --ion-item-background: transparent !important;
+  font-family: var(--body-font);
+  --padding-bottom: calc(env(safe-area-inset-bottom) + 60px);
+
+}
+.logout-text{
+  font-size: 14px;
+}
+
+.toolbar-buttons {
+  margin-right: 12px; // 👈 décale un peu vers la gauche
+}
+
+
+/* Buttons */
+.passer-commande-button,
+.consulter-commandes-button {
+  background-color: var(--ion-color-primary);
+  color: var(--ion-color-light);
+  padding: 12px 20px;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.passer-commande-button ion-icon,
+.consulter-commandes-button ion-icon {
+  margin-right: 8px;
+}
+
+/* Cards */
+.produit-rec ion-card {
+  background-color: var(--ion-color-secondary);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  transition: box-shadow 0.3s ease;
+}
+
+.produit-rec ion-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.produit-rec img {
+  width: 100%;
+  max-width: 180px;
+  height: auto;
+  padding: 1rem 0;
+  transition: transform 0.5s;
+}
+
+/* Menu */
+.header-menu ion-card {
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.header-menu ion-card:hover {
+  transform: scale(1.05);
+}
+
+.header-menu ion-card.active {
+  background-color: var(--ion-color-tertiary);
+}
+
+/* Search Bar */
+.search ion-item {
+  box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+}
+
+.search ion-icon {
+  margin-right: 16px;
+  color: var(--ion-color-medium);
+}
+
+/* Pharmacy List */
+.pharmacie-list {
+  padding: 0.5rem 0;
+}
+
+.pharmacie-item {
+  border-radius: 8px;
+  margin: 0.5rem;
+  background: var(--ion-item-background, #fff);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.pharmacie-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.pharmacie-item ion-label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.pharmacie-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  margin: 0;
+}
+
+.pharmacie-address {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+  margin-top: 5px;
+}
+
+.pharmacie-item ion-icon {
+  font-size: 1.25rem;
+  color: var(--ion-color-primary);
+}
+
+.logo-novopharma {
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+@keyframes shadowPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    transform: scale(1);
+  }
+  40% {
+    box-shadow: 0 0 15px 5px rgba(0, 0, 0, 0.5);
+    transform: scale(0.93);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    transform: scale(1);
+  }
+}
+
+.logo-novopharma.logo-shadow {
+  animation: shadowPulse 1s ease; /* animation plus visible */
+}
+
+
+
+

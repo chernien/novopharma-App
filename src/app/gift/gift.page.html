@@ -1,0 +1,164 @@
+<!-- <ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <img src="../../assets/logo_NOVOPHARMA_H-1-mini.png" width="64" alt="Logo Novopharma" />
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button class="notification" aria-label="Voir le panier" routerLink="/tabs/pharmacie">
+        <ion-icon name="medkit-outline" color="primary"></ion-icon>
+      </ion-button>
+      <ion-button class="filter" aria-label="Favoris" routerLink="/tabs/recommande">
+        <ion-icon name="star" color="warning"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  <ion-img src="../../assets/Operating system upgrade-cuate.png"></ion-img>
+</ion-content> -->
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <img 
+        src="../../assets/logo_NOVOPHARMA_H-1-mini.png" 
+        width="64" 
+        alt="Logo Novopharma"
+        style="cursor: pointer;" 
+        (click)="openVersionPage()" 
+      />
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button class="notification" aria-label="Voir le panier" routerLink="/tabs/cart">
+        <ion-icon name="cart-outline" color="primary"></ion-icon>
+        <ion-badge *ngIf="cartQuantity > 0" color="danger">{{ cartQuantity }}</ion-badge>
+      </ion-button>
+      <ion-button class="filter" aria-label="Favoris" routerLink="/tabs/recommande">
+        <ion-icon name="star" color="warning"></ion-icon>
+      </ion-button>
+      <ion-button class="filter" aria-label="Refresh" (click)="refreshPage()">
+  <ion-icon name="refresh" color="secondary"></ion-icon>
+</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  <div class="search ion-padding">
+
+    <ion-item lines="none">
+      <ion-input placeholder="🔎 Rechercher un gift..." [(ngModel)]="searchText" clear-input></ion-input>
+    </ion-item>
+  </div>
+
+  <ion-list class="ion-padding">
+    <ion-item lines="none" *ngIf="!selectedPharmacyJSON">
+      <ion-button routerLink="/tabs/pharmacie">
+        <ion-icon name="refresh-outline" slot="start"></ion-icon>&nbsp; 🏥 Choisir une Pharmacie
+      </ion-button>
+      <br>
+      <ion-text>Veuillez choisir une pharmacie pour afficher les articles.</ion-text>
+    </ion-item>
+
+    <div *ngIf="selectedPharmacyJSON">
+      <ion-item class="artcile-item" lines="none" *ngFor="let article of filterGifts()">
+        <ion-row *ngIf="selectedPharmacyJSON && article.quantiteAttribuee>0">
+          <ion-col size="12">
+            <ion-list>
+
+
+              <ion-item lines="none">
+                <ion-col size="4">
+                  
+                  <img alt="" *ngIf="article.ar_photo !== ''"
+                    src="https://novopharma.tn/api/MbArticle/image/{{ article?.giftRef }}" loading="lazy" />
+                  <img alt="🖼 Image par défaut" *ngIf="!article.ar_photo" src="../../../assets/images/365.png"
+                    loading="lazy" />
+                </ion-col>
+
+                <ion-col size="8">
+                  <ion-label>
+                    <h2 class="article-title"> <ion-icon color="danger" name="gift"></ion-icon>
+                      {{ article?.giftName }}</h2>
+                  </ion-label>
+                  <ion-row>
+                    <ion-col size="6">
+                      <ion-input class="article-qte" disabled type="number" placeholder="Stock Disponible"
+                        [(ngModel)]="article.quantiteAttribuee "></ion-input>
+
+                    </ion-col>
+                    <ion-col size="6">
+                      <ion-input class="article-qte" type="number" placeholder="Quantité offerte"
+                        [(ngModel)]="article.soldQuantity" [max]="article?.stockQuantity"
+                        (ionChange)="checkSoldQuantity(article)"></ion-input>
+                    </ion-col>  
+
+                     <!-- Date & Heure -->
+            <!-- Date & Heure centrée -->
+<ion-col size="12" class="center-button ion-margin-top">
+  <ion-item lines="none" class="date-item">
+    
+    <ion-datetime-button [datetime]="'datetime_' + article.giftRef" color="secondary"></ion-datetime-button>
+  </ion-item>
+  
+  <ion-modal [keepContentsMounted]="true">
+    <ng-template>
+      <ion-datetime
+  [id]="'datetime_' + article.giftRef"
+  presentation="date"
+  [ngModel]="article.dateCommande"
+  (ionChange)="onDateChange(article, $event)"
+  [min]="minDate"
+  [max]="maxDate"
+  color="primary">
+</ion-datetime>
+
+
+    </ng-template>
+  </ion-modal>
+</ion-col>
+
+
+                    <ion-col size="12">
+                      <ion-button color="success" *ngIf="article?.source=='Novopharma'" (click)="placeGiftOrder(article)"
+                        [disabled]="!article.soldQuantity || article.soldQuantity > article.quantiteAttribuee || !article.dateCommande">
+                        <ion-icon name="gift-outline"></ion-icon> &nbsp;Valider
+                      </ion-button>
+                      <ion-button color="success" *ngIf="article?.source=='Medsource'" (click)="placeGiftOrderMed(article)"
+                      [disabled]="!article.soldQuantity || article.soldQuantity > article.quantiteAttribuee || !article.dateCommande">
+                      <ion-icon name="gift-outline"></ion-icon> &nbsp;Valider
+                    </ion-button>
+                    </ion-col>
+                  </ion-row>
+
+                </ion-col>
+
+              </ion-item>
+
+            </ion-list>
+          </ion-col>
+          <ion-col size="12">
+            <!-- <ion-text *ngIf="article.stockQuantity > article?.aS_QteSto" class="error-message">
+              <p>⚠️ La quantité en stock ne peut pas dépasser le stock disponible !</p>
+            </ion-text> -->
+            <ion-text *ngIf="article.soldQuantity > article.quantiteAttribuee" class="error-message">
+              <p>⚠️ La quantité vendue ne peut pas dépasser la quantité en stock !</p>
+            </ion-text>
+          </ion-col>
+        </ion-row>
+        <br>
+      </ion-item>
+    </div>
+    <!-- Message si aucun gift -->
+<ion-item lines="none" *ngIf="selectedPharmacyJSON && filterGifts().length === 0">
+  <ion-text color="medium">
+    ⚠️ Aucun gift assigné pour vous pour le moment.
+  </ion-text>
+</ion-item>
+
+
+  </ion-list>
+  
+</ion-content>

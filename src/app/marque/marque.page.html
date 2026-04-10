@@ -1,0 +1,65 @@
+<ion-header>
+  <ion-toolbar>
+    <!-- Logo à gauche -->
+    <ion-buttons slot="start">
+      <img
+        src="../../assets/logo_NOVOPHARMA_H-1-mini.png"
+        width="64"
+        alt="Logo Novopharma"
+        style="cursor: pointer;"
+        (click)="openVersionPage()"
+      />
+    </ion-buttons>
+
+    <!-- Boutons à droite -->
+    <ion-buttons slot="end">
+      <ion-button class="filter" aria-label="Favoris" routerLink="/tabs/recommande">
+        <ion-icon name="star" color="warning"></ion-icon>
+      </ion-button>
+      <ion-button class="filter" aria-label="Refresh" (click)="refreshPage()">
+        <ion-icon name="refresh" color="secondary"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- 🔎 Champ de saisie du code-barre -->
+  <ion-item lines="full">
+    <ion-input
+      placeholder="📷 Saisir ou scanner un code-barre..."
+      [(ngModel)]="barcodeInput"
+      (ionChange)="onBarcodeChange($event)"
+      clear-input
+    ></ion-input>
+  </ion-item>
+
+  <div class="flex justify-center gap-3 ion-padding-top">
+  <ion-button color="primary" (click)="openCamera()">📸 Scanner avec la caméra</ion-button>
+  
+</div>
+
+
+  <ion-grid>
+    <ion-row class="flex justify-center">
+      <ion-col
+        size="12"
+        size-md="6"
+        size-lg="4"
+        *ngFor="let marque of marques"
+        class="flex justify-center"
+      >
+        <ion-card
+          class="bg-white shadow-lg rounded-xl hover:shadow-2xl transition-all"
+          (click)="goToArticles(marque)"
+        >
+          <ion-card-header class="p-5">
+            <ion-card-title class="text-lg font-bold text-center text-gray-700">
+              {{ marque }}
+            </ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

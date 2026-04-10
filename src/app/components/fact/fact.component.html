@@ -1,0 +1,103 @@
+<ion-card class="custom-card">
+  <ion-card-content class="ion-text-center">
+    <ion-item class="centered-item">
+      <ion-img *ngIf="capturedImage; else defaultImage" [src]="capturedImage" class="preview-img"></ion-img>
+      <ng-template #defaultImage>
+        <ion-img src="../../../assets/Invoice-rafiki.png" class="preview-img"></ion-img>
+      </ng-template>
+    </ion-item>
+    <div class="info-section">
+      <ion-item class="centered-item" lines="none">
+        <ion-button color="primary" (click)="chooseImageSource()">
+          <ion-icon name="camera-outline"></ion-icon>&nbsp; Prendre une photo
+        </ion-button>
+      </ion-item>
+
+      <ion-item class="info-item" lines="none">
+        <ion-label> 👤<strong>{{ userconnect?.username }}</strong></ion-label>
+      </ion-item>
+      <ion-item class="info-item" lines="none">
+        <ion-label> 🏥 <strong>{{ selectedPharmacyJSON?.ctIntitule }}</strong></ion-label>
+      </ion-item>
+    </div>
+
+    <!-- Arrivée -->
+<ion-item class="time-item">
+  <ion-label> 🕐<strong>Date & heure d'arrivée</strong></ion-label>
+  <ion-datetime-button [datetime]="'datetime1'" color="secondary"></ion-datetime-button>
+</ion-item>
+<ion-modal [keepContentsMounted]="true">
+  <ng-template>
+    <ion-datetime
+      id="datetime1"
+      [(ngModel)]="dateArrivee"
+      presentation="date-time"
+      color="primary"
+      hourCycle="h23"
+      [min]="minDate"
+      [max]="maxDate">
+    </ion-datetime>
+  </ng-template>
+</ion-modal>
+
+<!-- Date Facture -->
+<ion-item class="time-item">
+  <ion-label> 📅<strong>Date de la facture</strong></ion-label>
+  <ion-datetime-button [datetime]="'datetimeFacture'" color="secondary"></ion-datetime-button>
+</ion-item>
+<ion-modal [keepContentsMounted]="true">
+  <ng-template>
+    <ion-datetime
+      id="datetimeFacture"
+      [(ngModel)]="dateFacture"
+      presentation="date"
+      color="primary"
+      [min]="minDate"
+      [max]="maxDate">
+    </ion-datetime>
+  </ng-template>
+</ion-modal>
+
+
+
+    <!-- Départ -->
+<ion-item class="time-item">
+  <ion-label> 🕜<strong>Date & heure de départ</strong></ion-label>
+  <ion-datetime-button [datetime]="'datetime2'" color="secondary"></ion-datetime-button>
+</ion-item>
+<ion-modal [keepContentsMounted]="true">
+  <ng-template>
+    <ion-datetime
+      id="datetime2"
+      [(ngModel)]="dateSortie"
+      presentation="date-time"
+      color="primary"
+      hourCycle="h23"
+      [min]="minDate"
+      [max]="maxDate">
+    </ion-datetime>
+  </ng-template>
+</ion-modal>
+
+
+
+
+    <!-- 📝 Champ Commentaire Optionnel -->
+    <ion-item class="comment-item">
+      <ion-label position="stacked">📝 Commentaire (optionnel)</ion-label>
+      <ion-textarea [(ngModel)]="commentaire" placeholder="Ajoutez un commentaire ici..." auto-grow="true"></ion-textarea>
+    </ion-item>
+
+    <ion-item class="centered-item">
+      <ion-button
+  [disabled]="!dateFacture || !dateArrivee || !dateSortie || (dateArrivee >= dateSortie)"
+  expand="full"
+  shape="round"
+  color="secondary"
+  (click)="submitForm()">
+  <ion-icon name="checkmark-circle-outline"></ion-icon>&nbsp; Valider la Facture
+</ion-button>
+
+    </ion-item>
+  </ion-card-content>
+</ion-card>

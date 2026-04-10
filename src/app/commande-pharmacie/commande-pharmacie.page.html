@@ -1,0 +1,124 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <img src="../../assets/logo_NOVOPHARMA_H-1-mini.png" width="64" alt="Logo Novopharma" />
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button class="filter" aria-label="Favoris" routerLink="/tabs/facture">
+        <ion-icon size="large" name="camera-outline" color="primary"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true">
+  <!-- Nom de la pharmacie -->
+  <ion-item lines="none" style="margin:20px" class="center-content article-item">
+    <ion-row class="full-width">
+      <!-- Si une pharmacie est sélectionnée -->
+      <ng-container *ngIf="selectedPharmacyJSON?.ctIntitule; else noPharmacy">
+        <ion-col size="12">
+          <h4>
+            <strong>🛒 {{ selectedPharmacyJSON.ctIntitule }}</strong>
+          </h4>
+        </ion-col>
+        <ion-col size="12">
+          <ion-button expand="full" routerLink="/tabs/facture" shape="round" color="secondary">
+            📸 Capturer Facture
+          </ion-button>
+        </ion-col>
+      </ng-container>
+
+      <!-- Message si aucune pharmacie n'est sélectionnée -->
+      <ng-template #noPharmacy>
+        <ion-col size="12" class="center-content">
+          <ion-button routerLink="/tabs/pharmacie">
+            <ion-icon name="refresh-outline" slot="start"></ion-icon>&nbsp; Choisir une Pharmacie
+          </ion-button>
+          <br>
+          <h4 style="text-align: center;">
+            ❌ Veuillez sélectionner une pharmacie !
+          </h4>
+        </ion-col>
+      </ng-template>
+    </ion-row>
+  </ion-item>
+
+  <!-- 🔍 Sélection de date -->
+<ion-item lines="none" style="margin:20px">
+  
+  <ion-datetime
+    display-format="DD/MM/YYYY"
+    presentation="date"
+    [(ngModel)]="selectedDate"
+    (ionChange)="onDateChange()">
+  </ion-datetime>
+</ion-item>
+
+<ion-item lines="none" style="margin:20px">
+  <ion-button expand="full" color="primary" (click)="loadCommandesWithLoader()">
+    🔎 Rechercher
+  </ion-button>
+</ion-item>
+
+
+
+  <!-- 🔥 Message si la liste est vide -->
+  <div *ngIf="cartItems.length === 0" style="margin:20px" class="empty-list article-item">
+    <ion-icon name="calendar-outline" class="empty-icon"></ion-icon>
+    <p class="empty-text">⚠️ Aucun article trouvé ! Ajoutez des produits pour voir la liste.</p>
+    <ion-spinner *ngIf="showLoader"></ion-spinner>
+
+  </div>
+
+  <!-- 🛒 Liste des articles -->
+  <div class="cart-items">
+    <ion-list class="ion-padding">
+      <ion-item class="article-item" lines="none" *ngFor="let article of cartItems let i = index">
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="12">
+              <ion-item class="article-header" lines="none">
+                <!-- Image -->
+                <ion-thumbnail slot="start" class="image-container">
+                  <img *ngIf="article.ar_photo !== ''"
+                    [src]="'https://novopharma.tn/api/MbArticle/image/' + article?.article?.arRef"
+                    alt="🖼 Image article" loading="lazy" class="article-image" />
+                  <img *ngIf="article.ar_photo === ''" src="../../../assets/images/365.png" alt="🖼 Image par défaut"
+                    loading="lazy" class="article-image" />
+                </ion-thumbnail>
+
+                <!-- Designation -->
+                <ion-label class="article-label">
+                  <h2 class="article-title">{{ article?.article?.arDesign }}</h2>
+                </ion-label>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <!-- ✅ Dates Proches -->
+          <ion-row class="date-section">
+            <ion-col size="12">
+              <ion-item lines="none" class="date-item">
+                📦 Quantité en stock : <strong>{{article.quantity}}</strong>
+              </ion-item>
+              <ion-item lines="none" class="date-item">
+                🛒 Quantité vendue : <strong>{{article.quantityVendue
+                  }}</strong>
+              </ion-item>
+              <ion-item lines="none" class="date-item" *ngIf="article.datePeremtion">
+                📆 <strong>{{article.datePeremtion | date:'dd/MM/yyyy'}}</strong>
+                <ion-label slot="end">📦 <strong>{{article.qte1}}</strong></ion-label>
+              </ion-item>
+              <ion-item lines="none" class="date-item" *ngIf="article.datePeremtion1">
+                📆<strong>{{article.datePeremtion1 | date:'dd/MM/yyyy'}}</strong>
+                <ion-label slot="end">📦 <strong>{{article.qte2}}</strong></ion-label>
+              </ion-item>
+            
+            </ion-col>
+          </ion-row>
+
+        </ion-grid>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-content>

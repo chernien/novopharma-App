@@ -1,0 +1,154 @@
+<ion-header>
+  <ion-toolbar>
+    <!-- Logo -->
+    <ion-buttons slot="start">
+      <img 
+        src="../../assets/logo_NOVOPHARMA_H-1-mini.png" 
+        width="64" 
+        alt="Logo Novopharma"
+        style="cursor: pointer;" 
+        (click)="openVersionPage()" 
+      />
+    </ion-buttons>
+
+    <!-- Boutons à droite -->
+    <ion-buttons slot="end">
+
+      <ion-button class="filter" aria-label="Favoris" size="small" style="font-size: medium;"
+        routerLink="/tabs/commande-pharmacie">
+        <ion-icon name="receipt-outline" size="small"></ion-icon>&nbsp; Journée
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content fullscreen="true">
+            <!-- Sélection de la date de commande -->
+<ion-item lines="none" style="margin: 10px 20px; --min-height: 44px;" *ngIf="cartItems.length != 0">
+  
+  <ion-datetime
+    [(ngModel)]="selectedDate"
+    [min]="minDate"
+    [max]="maxDate"
+    display-format="DD MMM YYYY"
+    picker-format="DD/MM/YYYY"
+    presentation="date"
+    size="cover"
+    placeholder="Choisir la date">
+  </ion-datetime>
+</ion-item>
+
+
+
+  <!-- Nom de la pharmacie -->
+  <ion-item lines="none" style="margin: 20px;" class="center-content article-item" *ngIf="cartItems.length != 0">
+    <ion-grid>
+      <ion-row class="full-width ion-align-items-center ion-justify-content-center">
+        <ion-col size="12">
+          <h4>
+            <strong>🛒 {{selectedPharmacyJSON.ctIntitule}}</strong>
+          </h4>
+        </ion-col>
+         <ion-col size="12">
+
+
+          <ion-button expand="full" shape="round" (click)="sendCommandes()" color="success">
+            <ion-icon name="checkmark-circle"></ion-icon>&nbsp; Valider Tout
+          </ion-button>
+
+           <!-- Barre de progression -->
+  <ion-item lines="none" *ngIf="progress > 0" style="margin-top: 10px;">
+    <ion-label>Progression : {{progress}}%</ion-label>
+    <ion-progress-bar [value]="progress / 100" color="success"></ion-progress-bar>
+  </ion-item>
+  
+        </ion-col> 
+      </ion-row>
+    </ion-grid>
+
+  </ion-item>
+
+  <!-- Recherche -->
+  <div class="search ion-padding" *ngIf="cartItems.length != 0">
+    <ion-item lines="none">
+      <ion-input placeholder="🔍 Recherche par Article ou Pharmacie..." [(ngModel)]="searchText"></ion-input>
+    </ion-item>
+  </div>
+  <!-- 🔥 Affichage si le panier est vide -->
+  <div *ngIf="cartItems.length === 0" style="margin: 20px;" class="empty-cart article-item">
+    <ion-icon name="cart-outline" class="empty-icon"></ion-icon>
+    <p class="empty-text">⚠️ Votre panier est vide ! Ajoutez des articles pour commencer vos achats.</p>
+  </div>
+  <!-- Liste des articles -->
+  <div class="cart-items" *ngIf="cartItems.length != 0">
+    <ion-list class="ion-padding">
+      <ion-item class="article-item" lines="none"
+        *ngFor="let article of cartItems | commande:searchText; let i = index">
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="12">
+              <ion-item class="article-header" lines="none">
+                <!-- Image -->
+                <ion-thumbnail slot="start" class="image-container">
+                  <img *ngIf="article.ar_photo !== ''"
+                    [src]="'https://novopharma.tn/api/MbArticle/image/' + article?.article?.arRef"
+                    alt="🖼 Image article" loading="lazy" class="article-image" />
+                  <img *ngIf="article.ar_photo === ''" src="../../../assets/images/365.png" alt="🖼 Image par défaut"
+                    loading="lazy" class="article-image" />
+                </ion-thumbnail>
+
+                <!-- Designation -->
+                <ion-label class="article-label">
+                  <h2 class="article-title">{{ article?.article?.arDesign }}</h2>
+                </ion-label>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <!-- ✅ Dates Proches -->
+          <ion-row class="date-section">
+            <ion-col size="12">
+              <ion-item lines="none" class="date-item">
+                📦 Quantité en stock : <strong> <ion-input class="article-qte" type="number"
+                    [(ngModel)]="article.quantity"></ion-input></strong>
+              </ion-item>
+
+              <ion-item lines="none" class="date-item">
+                🛒 Quantité vendue : <strong> <ion-input class="article-qte" type="number"
+                    [(ngModel)]="article.quantityVendue"></ion-input></strong>
+              </ion-item>
+              <ion-item lines="none" class="date-item" *ngIf="article.datePeremtion">
+                📆 <strong>{{article.datePeremtion | date:'dd/MM/yyyy'}}</strong>
+                <ion-label slot="end">📦 <strong>{{article.qte1}}</strong></ion-label>
+              </ion-item>
+              <ion-item lines="none" class="date-item" *ngIf="article.datePeremtion1">
+                📆<strong>{{article.datePeremtion1 | date:'dd/MM/yyyy'}}</strong>
+                <ion-label slot="end">📦 <strong>{{article.qte2}}</strong></ion-label>
+              </ion-item>
+              <ion-item lines="none" class="date-item" *ngIf="article.datePeremtion2">
+                📆 <strong>{{article.datePeremtion2 | date:'dd/MM/yyyy'}}</strong>
+                <ion-label slot="end">📦 <strong>{{article.qte3}}</strong></ion-label>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <!-- Boutons Actions -->
+          <ion-row class="ion-align-items-center center-buttons">
+            <ion-col size="6" size-md="6">
+
+              <ion-button size="small" color="success"    (click)="AddCommande(article)">
+                <ion-icon name="checkmark"></ion-icon> Valider
+              </ion-button>
+            </ion-col>
+            <ion-col size="6" size-md="6">
+
+              <ion-button color="danger" size="small"
+                (click)="removeItemCart(article.pharmacy.ctNum, article.article?.arRef)">
+                <ion-icon name="close"></ion-icon> Annuler
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-content>

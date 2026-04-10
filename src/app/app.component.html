@@ -1,0 +1,17 @@
+<ion-app>
+
+  <!-- Bannière HORS LIGNE -->
+  <div class="network-banner network-banner--offline" *ngIf="isOffline">
+    <span class="network-banner__icon">📶</span>
+    Pas de connexion — reprise automatique dès le retour du réseau
+  </div>
+
+  <!-- Bannière CONNEXION RÉTABLIE -->
+  <div class="network-banner network-banner--online" *ngIf="showReconnectedBanner && !isOffline">
+    <span class="network-banner__icon">✅</span>
+    Connexion rétablie
+  </div>
+
+  <ion-router-outlet></ion-router-outlet>
+
+</ion-app>

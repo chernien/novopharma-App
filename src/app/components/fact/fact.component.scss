@@ -1,0 +1,49 @@
+.custom-card {
+  border-radius: 15px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  background: white;
+}
+
+.centered-item {
+  text-align: center;
+}
+.info-section {
+  padding: 10px;
+  margin-top: 5px;
+  background: #f0f8ff;
+  border-radius: 10px;
+}
+.preview-img {
+  width: 250px;
+  height: 250px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.info-item {
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  margin: 5px 0;
+  padding: 10px;
+}
+
+.time-item {
+  display: flex;
+  justify-content: space-between;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  margin: 5px 0;
+  padding: 10px;
+}
+
+ion-button {
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 10px;
+}
+
+ion-datetime {
+  --background: white;
+  --color: black;
+}

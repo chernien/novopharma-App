@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MSL</string>
+    <string name="title_activity_main">MSL</string>
+    <string name="package_name">com.novo.app</string>
+    <string name="custom_url_scheme">com.novo.app</string>
+</resources>
