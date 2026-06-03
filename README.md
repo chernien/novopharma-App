@@ -2,7 +2,7 @@
 
 <img src="src/assets/logo_NOVOPHARMA_H-1-mini.png" alt="Novopharma" width="280"/>
 
-# Novopharma MSL — Application Mobile Force de Vente
+# Novopharma MSL — Application Mobile de Vente
 
 **Application mobile hybride de gestion de la force de vente terrain pour délégués commerciaux et visiteurs médicaux du secteur pharmaceutique & dermo-cosmétique.**
 
