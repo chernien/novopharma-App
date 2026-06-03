@@ -185,57 +185,79 @@ for (const [key, value] of (formData as any).entries()) {
     try {
       const response = await fetch("https://novopharma.tn/api/Facture", {
         method: "POST",
-        body: formData, // ✅ Envoi correct du `FormData`
-        headers: {
-          "Accept": "application/json",
-          // NE PAS ajouter "Content-Type": "multipart/form-data", Fetch le gère automatiquement !
-        },
+        body: formData,
+        headers: { "Accept": "application/json" },
       });
 
-      const result = await response.json();
-      console.log("✅ Réponse API :", result);
-      // ✅ **Réinitialiser les champs du formulaire après envoi**
-      this.dateArrivee = '';
-      this.dateSortie = '';
-      this.commentaire = '';
-      this.capturedImageBlob = null!;
-      this.capturedImage = ''; // Pour réinitialiser l'affichage de l'image
+      // ── Parser JSON proprement (peut échouer si le serveur retourne du texte brut) ──
+      let result: any = null;
+      try {
+        result = await response.json();
+      } catch {
+        result = null;
+      }
 
-      console.log("🧹 Formulaire réinitialisé !");
+      console.log(`📡 Réponse API [${response.status}] :`, result);
+
+      // ── Succès ───────────────────────────────────────────────────────────────
       if (response.ok) {
-        this.presentAlert("Succès", "✅ Facture envoyée avec succès !");
+        this.dateArrivee   = '';
+        this.dateSortie    = '';
+        this.commentaire   = '';
+        this.capturedImageBlob = null!;
+        this.capturedImage = '';
+        console.log("🧹 Formulaire réinitialisé !");
+        this.presentAlert("✅ Succès", "La facture a été envoyée avec succès !");
         localStorage.setItem('cart', JSON.stringify([]));
         localStorage.removeItem('Pharmacie');
-        window.location.reload()
-
-      } else {
-        this.presentAlert("Erreur", "❌ Impossible d'envoyer la facture.");
+        window.location.reload();
+        return;
       }
+
+      // ── Erreur serveur (500) → lire l'errorType retourné par l'API ───────────
+      if (response.status >= 500) {
+        const errorType = result?.errorType ?? 'SERVER_ERROR';
+
+        if (errorType === 'DATABASE_CONNECTION_ERROR') {
+          this.presentAlert(
+            '❌ Base de données inaccessible',
+            'Le serveur de base de données est arrêté ou inaccessible. Contactez l\'administrateur.'
+          );
+        } else if (errorType === 'DATABASE_SAVE_ERROR') {
+          this.presentAlert(
+            '❌ Erreur d\'enregistrement',
+            'La facture a atteint le serveur mais n\'a pas pu être sauvegardée. Contactez l\'administrateur.'
+          );
+        } else {
+          this.presentAlert(
+            '❌ Erreur serveur',
+            'Une erreur interne s\'est produite côté serveur. Contactez l\'administrateur.'
+          );
+        }
+        return;
+      }
+
+      // ── Données invalides (400) → afficher le message exact du serveur ────────
+      if (response.status >= 400 && response.status < 500) {
+        const serverMessage = result?.message ?? 'Les données envoyées sont invalides.';
+        this.presentAlert('⚠️ Données invalides', serverMessage);
+        return;
+      }
+
+      // ── Cas inattendu ─────────────────────────────────────────────────────────
+      this.presentAlert('Erreur', 'Une erreur inattendue s\'est produite. Veuillez réessayer.');
+
     } catch (error) {
-      console.error("❌ Erreur API :", error);
-      this.presentAlert("Erreur", "❌ Impossible d'envoyer la facture.");
+      // ── fetch() throw → serveur totalement inaccessible (IIS arrêté, réseau coupé) ──
+      console.error("❌ Erreur réseau :", error);
+      this.presentAlert(
+        '📶 Connexion instable',
+        'Impossible de joindre le serveur. Vérifiez votre connexion Wi-Fi et réessayez.'
+      );
     }
   }
 
 
-  /**
-   * 📢 Gestion des erreurs API
-   */
-  async handleError(error: any) {
-    console.error('❌ Erreur API :', error);
-
-    let message = "Une erreur s'est produite. Veuillez réessayer.";
-
-    if (error.status === 400) {
-      message = "Données invalides. Vérifiez les informations saisies.";
-    } else if (error.status === 500) {
-      message = "Erreur serveur. Veuillez réessayer plus tard.";
-    } else if (error.error && error.error.message) {
-      message = error.error.message;  // Afficher l’erreur envoyée par l’API
-    }
-
-    await this.presentAlert('Erreur', " ❌ " + message);
-  }
   /**
    * 🛑 Affiche une alerte utilisateur
    */

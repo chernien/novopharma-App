@@ -25,7 +25,7 @@
 
 <ion-content fullscreen="true">
             <!-- Sélection de la date de commande -->
-<ion-item lines="none" style="margin: 10px 20px; --min-height: 44px;" *ngIf="cartItems.length != 0">
+<ion-item lines="none" style="margin: 10px 20px; --min-height: 44px;" *ngIf="cartItems.length !== 0">
   
   <ion-datetime
     [(ngModel)]="selectedDate"
@@ -42,7 +42,7 @@
 
 
   <!-- Nom de la pharmacie -->
-  <ion-item lines="none" style="margin: 20px;" class="center-content article-item" *ngIf="cartItems.length != 0">
+  <ion-item lines="none" style="margin: 20px;" class="center-content article-item" *ngIf="cartItems.length !== 0">
     <ion-grid>
       <ion-row class="full-width ion-align-items-center ion-justify-content-center">
         <ion-col size="12">
@@ -70,7 +70,7 @@
   </ion-item>
 
   <!-- Recherche -->
-  <div class="search ion-padding" *ngIf="cartItems.length != 0">
+  <div class="search ion-padding" *ngIf="cartItems.length !== 0">
     <ion-item lines="none">
       <ion-input placeholder="🔍 Recherche par Article ou Pharmacie..." [(ngModel)]="searchText"></ion-input>
     </ion-item>
@@ -81,7 +81,7 @@
     <p class="empty-text">⚠️ Votre panier est vide ! Ajoutez des articles pour commencer vos achats.</p>
   </div>
   <!-- Liste des articles -->
-  <div class="cart-items" *ngIf="cartItems.length != 0">
+  <div class="cart-items" *ngIf="cartItems.length !== 0">
     <ion-list class="ion-padding">
       <ion-item class="article-item" lines="none"
         *ngFor="let article of cartItems | commande:searchText; let i = index">

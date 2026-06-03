@@ -1,0 +1,36 @@
+---
+description: Full app debug workflow for Ionic Angular Capacitor
+alwaysApply: true
+---
+
+# Full Debug Workflow
+
+Use this sequence when asked to "debug the app" or investigate breakage.
+
+1. Environment and install:
+- Confirm Node/npm versions and run `npm install` if needed.
+- Verify Capacitor config in `capacitor.config.ts`.
+
+2. Static checks (run in order):
+- `npm run lint`
+- `npm run test -- --watch=false --browsers=ChromeHeadless`
+- `npm run build`
+
+3. Runtime debug:
+- Web: run `npm start` and inspect browser console/network errors.
+- Android: run `npx cap sync android`, then `npx cap open android` and review Logcat/runtime stack traces.
+
+4. Triage rules:
+- Fix the first error before touching follow-up errors.
+- Prefer minimal, targeted fixes over broad refactors.
+- Preserve existing behavior unless the bug requires behavior change.
+
+5. Verification before finish:
+- Re-run `lint`, `test`, and `build` after fixes.
+- Record root cause, changed files, and exact validation commands.
+
+6. Reporting format:
+- Root cause
+- Fix implemented
+- Risks/regression areas
+- Verification results (command + pass/fail)

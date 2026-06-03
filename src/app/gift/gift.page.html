@@ -122,11 +122,11 @@
 
 
                     <ion-col size="12">
-                      <ion-button color="success" *ngIf="article?.source=='Novopharma'" (click)="placeGiftOrder(article)"
+                      <ion-button color="success" *ngIf="article?.source === 'Novopharma'" (click)="placeGiftOrder(article)"
                         [disabled]="!article.soldQuantity || article.soldQuantity > article.quantiteAttribuee || !article.dateCommande">
                         <ion-icon name="gift-outline"></ion-icon> &nbsp;Valider
                       </ion-button>
-                      <ion-button color="success" *ngIf="article?.source=='Medsource'" (click)="placeGiftOrderMed(article)"
+                      <ion-button color="success" *ngIf="article?.source === 'Medsource'" (click)="placeGiftOrderMed(article)"
                       [disabled]="!article.soldQuantity || article.soldQuantity > article.quantiteAttribuee || !article.dateCommande">
                       <ion-icon name="gift-outline"></ion-icon> &nbsp;Valider
                     </ion-button>

@@ -6,7 +6,6 @@ import { HttpClient } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-import * as Tesseract from 'tesseract.js';
 
 @Component({
   selector: 'app-marque',
@@ -19,6 +18,7 @@ export class MarquePage implements OnInit, OnDestroy {
   barcodeInput: string = '';
   backButtonSub!: Subscription;
   private codeReader = new BrowserMultiFormatReader();
+  private tesseractModule: typeof import('tesseract.js') | null = null;
 
   constructor(
     private articleService: ArticlesService,
@@ -43,6 +43,13 @@ export class MarquePage implements OnInit, OnDestroy {
     if (this.backButtonSub) {
       this.backButtonSub.unsubscribe();
     }
+  }
+
+  private async getTesseract() {
+    if (!this.tesseractModule) {
+      this.tesseractModule = await import('tesseract.js');
+    }
+    return this.tesseractModule;
   }
 
   openVersionPage() {
@@ -130,7 +137,8 @@ export class MarquePage implements OnInit, OnDestroy {
 
     // 2️⃣ Si ZXing échoue → OCR
     if (!decodedText) {
-      const ocrResult = await Tesseract.recognize(dataUrl, 'eng', {
+      const tesseract = await this.getTesseract();
+      const ocrResult = await tesseract.recognize(dataUrl, 'eng', {
         logger: (m) => console.log(m),
       });
 

@@ -3,10 +3,10 @@ import { ClientService } from '../services/client.service';
 import { Router } from '@angular/router';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { CartService } from '../services/cart.service';
-import { finalize, firstValueFrom, take } from 'rxjs';
+import { finalize, firstValueFrom, Observable, take, timeout, TimeoutError } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
-import { HttpClient } from '@angular/common/http';
 
 
 @Component({
@@ -220,7 +220,6 @@ private async getGeolocation(): Promise<string | null> {
   const loading = await this.loadingCtrl.create({
     message: "Récupération position..."
   });
-
   await loading.present();
 
   try {
@@ -240,22 +239,18 @@ private async getGeolocation(): Promise<string | null> {
 
     console.log("📍 Check-in payload:", payload);
 
-    await firstValueFrom(this.clientService.checkIn(payload));
+    loading.message = "Envoi check-in...";
+    await this.callWithTimeout(this.clientService.checkIn(payload));
 
     localStorage.setItem("checkIn", "true");
     this.isCheckedIn = true;
+    this.showAlert("✅ Succès", "Check-in effectué avec succès !");
 
-    this.showAlert("Succès", "Check-in effectué avec succès ✅");
-
-  } catch (err) {
-
+  } catch (err: any) {
     console.error("Erreur API check-in:", err);
-    this.showAlert("Erreur", "Impossible d’enregistrer votre check-in.");
-
+    this.handleCheckApiError(err, "check-in");
   } finally {
-
     await loading.dismiss();
-
   }
 }
 
@@ -264,7 +259,6 @@ async onCheckOut() {
   const loading = await this.loadingCtrl.create({
     message: "Récupération position..."
   });
-
   await loading.present();
 
   try {
@@ -284,23 +278,82 @@ async onCheckOut() {
 
     console.log("📍 Check-out payload:", payload);
 
-    await firstValueFrom(this.clientService.checkOut(payload));
+    loading.message = "Envoi check-out...";
+    await this.callWithTimeout(this.clientService.checkOut(payload));
 
     localStorage.setItem("checkIn", "false");
     this.isCheckedIn = false;
+    this.showAlert("✅ Succès", "Check-out effectué avec succès !");
 
-    this.showAlert("Succès", "Check-out effectué avec succès 🚪");
-
-  } catch (err) {
-
+  } catch (err: any) {
     console.error("Erreur API check-out:", err);
-    this.showAlert("Erreur", "Impossible d’enregistrer votre check-out.");
-
+    this.handleCheckApiError(err, "check-out");
   } finally {
-
     await loading.dismiss();
-
   }
+}
+
+// ─── Appel API avec timeout 11s ────────────────────────────────────────────
+
+private async callWithTimeout(observable: Observable<any>): Promise<any> {
+  return await firstValueFrom(observable.pipe(timeout(11000)));
+}
+
+// ─── Handler centralisé des erreurs check-in / check-out ───────────────────
+
+private handleCheckApiError(err: any, operation: string): void {
+  const label = operation === "check-in" ? "check-in" : "check-out";
+
+  // Timeout 11s - aucune reponse du serveur
+  if (err instanceof TimeoutError) {
+    this.showAlert(
+      "Connexion instable",
+      "Le serveur n’a pas repondu. Votre " + label + " n’a pas pu etre enregistre. Veuillez reessayer plus tard."
+    );
+    return;
+  }
+
+  if (err instanceof HttpErrorResponse) {
+
+    // IIS arrete / serveur inaccessible (status 0)
+    if (err.status === 0) {
+      this.showAlert(
+        "Connexion instable",
+        "Impossible de joindre le serveur. Votre " + label + " n’a pas pu etre enregistre. Verifiez votre connexion."
+      );
+      return;
+    }
+
+    // Erreur interne serveur (500)
+    if (err.status >= 500) {
+      this.showAlert(
+        "Erreur serveur",
+        "Une erreur est survenue cote serveur lors du " + label + ". Contactez l’administrateur."
+      );
+      return;
+    }
+
+    // Utilisateur introuvable (404)
+    if (err.status === 404) {
+      this.showAlert(
+        "Connexion instable",
+        "Impossible de joindre le serveur. Votre " + label + " n’a pas pu etre enregistre. Verifiez votre connexion."
+      );
+      return;
+    }
+
+    // Donnees invalides (400)
+    if (err.status === 400) {
+      const serverMsg = typeof err.error === "string"
+        ? err.error
+        : (err.error?.message ?? "Les donnees envoyees sont invalides.");
+      this.showAlert("Donnees invalides", serverMsg);
+      return;
+    }
+  }
+
+  // Cas generique
+  this.showAlert("Erreur", "Impossible d’enregistrer votre " + label + ". Reessayez.");
 }
 
 

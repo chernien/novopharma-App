@@ -208,25 +208,49 @@ onDateChange(article: any, event: any) {
 
   } catch (error) {
     console.error("❌ Erreur lors de la commande :", error);
-
-    // ⛔ Récupération du vrai message d'erreur API
-    let apiErrorMsg = "Échec de la commande.";
-
-    if (error instanceof HttpErrorResponse) {
-      apiErrorMsg =
-        error?.error?.error ||   // { error: "xxxx" }
-        error?.error?.message || // fallback
-        error.message ||         // message brut
-        "Échec de la commande.";
-    }
-
-    // rollback UI
-    article.quantiteAttribuee = prevQty;
-    if (wasRemoved) this.gifts.push(article);
-    this.cdr.detectChanges();
-
-    this.showToast(`❌ ${apiErrorMsg}`, "danger");
+    this.handleGiftOrderError(error, article, prevQty, wasRemoved);
   }
+}
+
+// ─── Handler centralisé erreurs gift order ────────────────────────────────
+
+private handleGiftOrderError(
+  error: any,
+  article: any,
+  prevQty: number,
+  wasRemoved: boolean
+): void {
+  // Rollback UI dans tous les cas
+  article.quantiteAttribuee = prevQty;
+  if (wasRemoved) this.gifts.push(article);
+  this.cdr.detectChanges();
+
+  // Pas de reponse HTTP du tout (erreur JS / reseau natif)
+  if (!(error instanceof HttpErrorResponse)) {
+    this.showToast("Connexion instable. Impossible de joindre le serveur.", "danger");
+    return;
+  }
+
+  // Status 0 = IIS arrete ou reseau coupe
+  if (error.status === 0) {
+    this.showToast("Connexion instable. Verifiez votre connexion et reessayez.", "danger");
+    return;
+  }
+
+  // Status 500 = erreur interne serveur
+  if (error.status >= 500) {
+    this.showToast("Erreur serveur. Veuillez reessayer plus tard ou contacter l'administrateur.", "danger");
+    return;
+  }
+
+  // 400 / 404 = logique metier → afficher le message exact de l'API
+  const apiErrorMsg =
+    error?.error?.error ||
+    error?.error?.message ||
+    error.message ||
+    "Echec de la commande.";
+
+  this.showToast("❌ " + apiErrorMsg, "danger");
 }
 
 async showToast(message: string, color: string = "primary") {
@@ -300,24 +324,7 @@ async showToast(message: string, color: string = "primary") {
 
   } catch (error) {
     console.error("❌ Erreur lors de la commande (Med):", error);
-
-    // ⛔ Message d'erreur API réel
-    let apiErrorMsg = "Échec de la commande.";
-
-    if (error instanceof HttpErrorResponse) {
-      apiErrorMsg =
-        error?.error?.error ||     // { error: "..."}
-        error?.error?.message ||   // { message: "..." }
-        error.message ||
-        "Échec de la commande.";
-    }
-
-    // rollback UI
-    article.quantiteAttribuee = prevQty;
-    if (wasRemoved) this.gifts.push(article);
-    this.cdr.detectChanges();
-
-    this.showToast(`❌ ${apiErrorMsg}`, "danger");
+    this.handleGiftOrderError(error, article, prevQty, wasRemoved);
   }
 }
 

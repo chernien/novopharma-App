@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CartService } from '../services/cart.service';
 import { ClientService } from '../services/client.service';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout, TimeoutError } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { NetworkService } from '../services/network.service';
 import { CommandeQueueService, ChunkItem, QueueSession } from '../services/commande-queue.service';
@@ -104,10 +105,35 @@ export class CartPage implements OnInit {
       this.loadCart();
       this.progress = 0;
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Erreur lors de la reprise de session :', error);
       await loading.dismiss();
-      this.showAlert('Erreur', 'Reprise interrompue. Relancez l\'application pour réessayer.');
+
+      const code = error?.message;
+
+      if (code === 'DATABASE_CONNECTION_ERROR') {
+        this.showAlert(
+          '❌ Base de données inaccessible',
+          'SQL Server est arrêté ou inaccessible. Contactez l\'administrateur.'
+        );
+      } else if (code === 'DATABASE_SAVE_ERROR') {
+        this.showAlert(
+          '❌ Erreur d\'enregistrement',
+          'Les données ont atteint le serveur mais n\'ont pas pu être sauvegardées. Contactez l\'administrateur.'
+        );
+      } else if (code === 'SERVER_ERROR') {
+        this.showAlert(
+          '❌ Erreur serveur',
+          'Une erreur interne s\'est produite côté serveur lors de la reprise. Contactez l\'administrateur.'
+        );
+      } else if (code === 'NETWORK_UNSTABLE') {
+        this.showAlert(
+          '📶 Connexion instable',
+          'La connexion réseau est instable. La reprise a été arrêtée. Vérifiez votre Wi-Fi et relancez l\'application.'
+        );
+      } else {
+        this.showAlert('Erreur', 'Reprise interrompue. Relancez l\'application pour réessayer.');
+      }
     }
   }
 
@@ -174,19 +200,19 @@ export class CartPage implements OnInit {
     article.soldQuantity = Math.min(article.soldQuantity, article.stockQuantity || 0);
   }
 
-  // ─── Retry intelligent avec backoff progressif ────────────────────────────
+  // ─── Retry intelligent avec distinction serveur / réseau ─────────────────
 
   async retryChunk(
     chunk: any[],
     username: string,
     source: string,
     loading?: any,
-    maxRetries = 5
+    maxNetworkRetries = 3
   ): Promise<void> {
     let attempt = 0;
-    let delay = 3000; // 3s → 6s → 9s → 12s → max 15s
+    let delay = 3000; // 3s → 6s → max 9s
 
-    while (attempt < maxRetries) {
+    while (attempt < maxNetworkRetries) {
 
       // Si hors ligne → pause propre, sans compter comme retry
       if (!this.networkService.isOnline) {
@@ -194,14 +220,16 @@ export class CartPage implements OnInit {
         if (loading) loading.message = '📶 En attente de connexion réseau...';
         await this.networkService.waitForOnline();
         if (loading) loading.message = '🔄 Connexion rétablie, reprise de l\'envoi...';
-        // Petite pause pour laisser la connexion se stabiliser
         await new Promise(res => setTimeout(res, 1000));
       }
 
       try {
-        console.log(`🚀 Tentative #${attempt + 1} d\'envoi du chunk (${chunk.length} articles)...`);
+        console.log(`🚀 Tentative #${attempt + 1} d'envoi du chunk (${chunk.length} articles)...`);
+
         const response: any = await firstValueFrom(
-          this.clientService.AddCommandes(chunk, username, source)
+          this.clientService.AddCommandes(chunk, username, source).pipe(
+            timeout(60000) // 60s max — laisse le serveur retourner son 500 avant d'abandonner
+          )
         );
 
         if (Array.isArray(response)) {
@@ -210,11 +238,11 @@ export class CartPage implements OnInit {
               this.showToast(`❌ Article déjà commandé : ${resItem.articleId}`, 'warning');
               chunk.splice(idx, 1);
             } else if (resItem.status === 'quantityFalse') {
-              this.showToast(`⚠ Quantité différente pour l\'article ${resItem.articleId}`, 'warning');
+              this.showToast(`⚠ Quantité différente pour l'article ${resItem.articleId}`, 'warning');
             } else if (resItem.status === 'quantityVendueFalse') {
-              this.showToast(`⚠ Quantité vendue différente pour l\'article ${resItem.articleId}`, 'warning');
+              this.showToast(`⚠ Quantité vendue différente pour l'article ${resItem.articleId}`, 'warning');
             } else if (resItem.status === 'mismatch') {
-              this.showToast(`⚠ Quantity et QuantityVendue différentes pour l\'article ${resItem.articleId}`, 'warning');
+              this.showToast(`⚠ Quantity et QuantityVendue différentes pour l'article ${resItem.articleId}`, 'warning');
             }
           });
         }
@@ -222,19 +250,38 @@ export class CartPage implements OnInit {
         console.log(`✅ Chunk envoyé avec succès après ${attempt + 1} tentative(s).`);
         return;
 
-      } catch (err) {
-        attempt++;
-        console.error(`❌ Échec tentative #${attempt} pour ce chunk`, err);
+      } catch (err: any) {
 
-        if (attempt >= maxRetries) {
-          throw new Error(`Chunk échoué après ${maxRetries} tentatives`);
+        // ── Erreur HTTP (réponse du serveur reçue) ──────────────────────────
+        if (err instanceof HttpErrorResponse) {
+          console.error(`❌ Erreur HTTP ${err.status} reçue du serveur`, err);
+
+          if (err.status >= 500) {
+            // Lire l'errorType retourné par l'API pour afficher le bon message
+            const errorType = err.error?.errorType ?? 'SERVER_ERROR';
+            throw new Error(errorType);
+          }
+
+          if (err.status >= 400 && err.status < 500) {
+            throw new Error('BAD_REQUEST');
+          }
         }
 
-        // Backoff progressif : 3s → 6s → 9s → 12s → max 15s
-        console.log(`⏳ Retry dans ${delay / 1000}s (tentative ${attempt + 1}/${maxRetries})...`);
-        if (loading) loading.message = `⏳ Retry dans ${delay / 1000}s...`;
+        // ── Timeout ou erreur réseau → on retente ───────────────────────────
+        attempt++;
+        const isTimeout = err instanceof TimeoutError;
+        console.warn(
+          `⏳ ${isTimeout ? 'Timeout' : 'Erreur réseau'} — tentative ${attempt}/${maxNetworkRetries}`,
+          err
+        );
+
+        if (attempt >= maxNetworkRetries) {
+          throw new Error('NETWORK_UNSTABLE');
+        }
+
+        if (loading) loading.message = `📶 Connexion instable, tentative ${attempt + 1}/${maxNetworkRetries}...`;
         await new Promise(res => setTimeout(res, delay));
-        delay = Math.min(delay + 3000, 15000);
+        delay = Math.min(delay + 3000, 9000);
       }
     }
   }
@@ -346,13 +393,66 @@ export class CartPage implements OnInit {
       this.loadCart();
       this.progress = 0;
 
-    } catch (error) {
+    } catch (error: any) {
+
+      console.log('================ ERROR DEBUG ================');
+
+  console.log('Erreur complète :');
+  console.log(error);
+
+  console.log('Status HTTP :');
+  console.log(error?.status);
+
+  console.log('Message :');
+  console.log(error?.message);
+
+  console.log('Nom erreur :');
+  console.log(error?.name);
+
+  console.log('Body retourné :');
+  console.log(error?.error);
+
+  console.log('errorType backend :');
+  console.log(error?.error?.errorType);
+
+  console.log('=============================================');
+
       console.error('❌ Erreur critique envoi commandes :', error);
       await loading.dismiss();
-      this.showAlert(
-        'Envoi interrompu',
-        'L\'envoi a été interrompu. Relancez l\'application pour reprendre depuis le dernier point sauvegardé.'
-      );
+
+      const code = error?.message;
+
+      if (code === 'DATABASE_CONNECTION_ERROR') {
+        this.showAlert(
+          '❌ Base de données inaccessible',
+          'Le serveur de base de données est arrêté ou inaccessible. Contactez l\'administrateur pour redémarrer SQL Server.'
+        );
+      } else if (code === 'DATABASE_SAVE_ERROR') {
+        this.showAlert(
+          '❌ Erreur d\'enregistrement',
+          'Les données ont bien atteint le serveur mais n\'ont pas pu être enregistrées (contrainte base de données). Contactez l\'administrateur.'
+        );
+      } else if (code === 'SERVER_ERROR') {
+        this.showAlert(
+          '❌ Erreur serveur',
+          'Une erreur interne s\'est produite côté serveur. Vos données n\'ont pas été enregistrées. Contactez l\'administrateur.'
+        );
+      } else if (code === 'NETWORK_UNSTABLE') {
+        this.showAlert(
+          '📶 Connexion instable',
+          'La connexion réseau est instable. L\'envoi a été arrêté après plusieurs tentatives. Vérifiez votre connexion Wi-Fi et réessayez.'
+        );
+      } else if (code === 'BAD_REQUEST') {
+        this.showAlert(
+          '📶 Connexion instable',
+          'La connexion réseau est instable. L\'envoi a été arrêté après plusieurs tentatives. Vérifiez votre connexion Wi-Fi et réessayez.'
+        );
+      } else {
+        this.showAlert(
+          '📶 Connexion instable',
+          'La connexion réseau est instable. L\'envoi a été arrêté après plusieurs tentatives. Vérifiez votre connexion Wi-Fi et réessayez.'
+        );
+      }
     }
   }
 }
