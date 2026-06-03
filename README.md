@@ -1,93 +1,301 @@
-# Novopharma
+<div align="center">
 
+<img src="src/assets/logo_NOVOPHARMA_H-1-mini.png" alt="Novopharma" width="280"/>
 
+# Novopharma MSL — Application Mobile Force de Vente
 
-## Getting started
+**Application mobile hybride de gestion de la force de vente terrain pour délégués commerciaux et visiteurs médicaux du secteur pharmaceutique & dermo-cosmétique.**
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+[![Ionic](https://img.shields.io/badge/Ionic-8-3880FF?logo=ionic&logoColor=white)](https://ionicframework.com/)
+[![Angular](https://img.shields.io/badge/Angular-19-DD0031?logo=angular&logoColor=white)](https://angular.dev/)
+[![Capacitor](https://img.shields.io/badge/Capacitor-7-119EFF?logo=capacitor&logoColor=white)](https://capacitorjs.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20PWA-success)](#)
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+</div>
 
-## Add your files
+---
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+## 📑 Sommaire
+
+- [Présentation](#-présentation)
+- [Aperçu](#-aperçu)
+- [Fonctionnalités](#-fonctionnalités)
+- [Technologies utilisées](#-technologies-utilisées)
+- [Captures d'écran](#-captures-décran)
+- [Structure du projet](#-structure-du-projet)
+- [Installation](#-installation)
+- [Build & déploiement mobile](#-build--déploiement-mobile)
+- [Responsive & expérience mobile](#-responsive--expérience-mobile)
+- [Points techniques intéressants](#-points-techniques-intéressants)
+- [Auteur](#-auteur)
+
+---
+
+## 🎯 Présentation
+
+**Novopharma MSL** (*Mobile Sales Loop*) est une application mobile destinée aux **délégués commerciaux et visiteurs médicaux** d'un laboratoire pharmaceutique. Elle équipe les commerciaux sur le terrain pour gérer l'intégralité de leur **tournée de visites** : pointage géolocalisé chez les pharmacies, prise de commande produit par produit, attribution de cadeaux promotionnels, consultation de l'historique des factures, et synchronisation des données — y compris **en l'absence de connexion réseau**.
+
+| | |
+|---|---|
+| **Objectif** | Digitaliser et fiabiliser la tournée commerciale terrain (visites, commandes, reporting). |
+| **Public cible** | Délégués commerciaux, visiteurs médicaux, force de vente B2B pharmaceutique. |
+| **Contexte d'usage** | Mobilité totale, conditions réseau instables, saisie rapide en pharmacie. |
+| **Backend** | API REST consommée sur `https://novopharma.tn`. |
+
+---
+
+## 👀 Aperçu
+
+L'application s'articule autour d'une **navigation par onglets** pensée pour le terrain. Après authentification, le commercial accède à 5 espaces de travail :
+
+| Onglet | Rôle |
+|--------|------|
+| 🏥 **Pharmacie** | Liste et recherche des pharmacies (clients), pointage **check-in / check-out géolocalisé** des visites. |
+| 📋 **Articles** | Catalogue produits organisé par **marque** et par **dermo**, recherche, fiche article, scan code-barres. |
+| 🎁 **Gift** | Attribution de cadeaux et échantillons promotionnels associés aux gammes. |
+| 🛒 **Panier** | Construction de la commande, gestion des quantités, lots, n° de série et dates de péremption. |
+| 📅 **Journée** | Récapitulatif de la tournée du jour, validation et **envoi des commandes** (avec reprise hors-ligne). |
+
+---
+
+## ✨ Fonctionnalités
+
+### 🔐 Authentification & sessions
+- Connexion commercial sécurisée via formulaire réactif (validation Angular `Reactive Forms`).
+- Persistance de session (`localStorage`) avec redirection automatique si déjà connecté.
+- Déconnexion avec nettoyage complet de la session.
+
+### 📍 Visites terrain (géolocalisation)
+- **Check-in / Check-out** des visites en pharmacie avec capture de la **géolocalisation** (Capacitor Geolocation).
+- Horodatage des entrées/sorties pour le reporting d'activité.
+
+### 🛒 Prise de commande
+- Catalogue produits par **marque** et **dermo**, recherche temps réel via pipes dédiés.
+- Panier réactif persistant avec gestion fine : quantités, **quantité vendue**, **numéros de série** et **dates de péremption multiples** (jusqu'à 3 lots par ligne).
+- Commande mono-pharmacie ou **multi-pharmacies** (envoi groupé).
+
+### 🎁 Cadeaux & promotions
+- Sélection et commande de **gifts / échantillons** rattachés à une dermo ou un produit.
+
+### 📷 Saisie assistée
+- **Scan de code-barres** produit (`@zxing/browser` + `capacitor-barcode-scanner`).
+- **Reconnaissance optique (OCR)** via `tesseract.js` pour la lecture de références.
+- Capture photo (Capacitor Camera) pour pièces justificatives / factures.
+
+### 🧾 Historique & documents
+- Consultation des **factures** et **en-têtes de commandes** par client.
+- Filtres par **mois** et **trimestre**.
+- Détail des lignes de commande/facture.
+
+### 🌐 Mode hors-ligne (offline-first)
+- Détection en temps réel de l'état réseau (`NetworkService`, `BehaviorSubject`).
+- **File d'attente de synchronisation par chunks** (`CommandeQueueService`) : les commandes sont découpées, persistées localement, envoyées progressivement, et **toute session incomplète est reprise automatiquement** au retour de la connexion.
+
+---
+
+## 🛠 Technologies utilisées
+
+| Technologie | Usage |
+|-------------|-------|
+| **Ionic 8** | Framework UI mobile (composants natifs, navigation, theming) |
+| **Angular 19** | Framework applicatif (modules, lazy-loading, services, routing) |
+| **Capacitor 7** | Pont natif (Android), accès aux API device |
+| **TypeScript 5.6** | Langage principal, typage statique |
+| **RxJS 7.8** | Programmation réactive (état panier, état réseau) |
+| **Capacitor Geolocation** | Pointage géolocalisé des visites |
+| **Capacitor Camera / Filesystem** | Capture photo et stockage |
+| **@zxing/browser · capacitor-barcode-scanner** | Lecture de codes-barres |
+| **tesseract.js** | OCR de références produit |
+| **ngx-infinite-scroll** | Défilement infini sur les listes longues |
+| **Ionicons** | Jeu d'icônes |
+| **ESLint · Karma / Jasmine** | Qualité de code et tests unitaires |
+
+---
+
+## 🖼 Captures d'écran
+
+> 📸 *Insérer ici les captures de l'application. Emplacements recommandés ci-dessous.*
+
+| Écran | Emplacement de la capture |
+|-------|---------------------------|
+| **Authentification** | `docs/screenshots/01-login.png` |
+| **Liste des pharmacies + Check-in** | `docs/screenshots/02-pharmacies.png` |
+| **Catalogue par marque / articles** | `docs/screenshots/03-articles.png` |
+| **Fiche article & scan code-barres** | `docs/screenshots/04-scan.png` |
+| **Panier (lots / quantités)** | `docs/screenshots/05-cart.png` |
+| **Journée / validation des commandes** | `docs/screenshots/06-journee.png` |
+| **Gifts & promotions** | `docs/screenshots/07-gifts.png` |
+| **Factures & historique** | `docs/screenshots/08-factures.png` |
+
+<!--
+Exemple d'intégration une fois les images ajoutées :
+
+<p align="center">
+  <img src="docs/screenshots/01-login.png" width="220"/>
+  <img src="docs/screenshots/02-pharmacies.png" width="220"/>
+  <img src="docs/screenshots/05-cart.png" width="220"/>
+</p>
+-->
+
+---
+
+## 📂 Structure du projet
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/mediasoft1/novopharma.git
-git branch -M main
-git push -uf origin main
+novopharma/
+├── src/
+│   ├── app/
+│   │   ├── login/                 # Authentification commercial
+│   │   ├── tabs/                  # Conteneur de navigation (5 onglets)
+│   │   ├── pharamcie/             # Pharmacies (clients) + check-in/out géolocalisé
+│   │   ├── marque/                # Catalogue par marque
+│   │   ├── dermos/                # Catalogue par dermo
+│   │   ├── articles/              # Liste & fiche produit, scan
+│   │   ├── gift/                  # Cadeaux & échantillons
+│   │   ├── cart/                  # Panier
+│   │   ├── commande-pharmacie/    # « Journée » : validation/envoi des commandes
+│   │   ├── recommande/            # Produits recommandés
+│   │   ├── facture/               # Factures & historiques
+│   │   ├── components/            # Composants réutilisables (ex. fact)
+│   │   ├── pipes/                 # Filtres de recherche (article, client, commande, gift…)
+│   │   ├── services/              # Logique métier & accès API
+│   │   │   ├── client.service.ts          # Auth, check-in/out, commandes
+│   │   │   ├── articles.service.ts         # Articles, marques, factures
+│   │   │   ├── cart.service.ts             # État du panier (RxJS + localStorage)
+│   │   │   ├── commande-queue.service.ts   # File offline par chunks
+│   │   │   ├── network.service.ts          # Détection online/offline
+│   │   │   ├── photo.service.ts            # Upload factures/photos
+│   │   │   └── ...
+│   │   ├── app-routing.module.ts  # Routing global (lazy-loading + preload)
+│   │   └── app.module.ts
+│   ├── assets/                    # Logos, images, polices, icônes
+│   ├── environments/              # Configuration (URL backend)
+│   ├── theme/                     # Variables de thème Ionic
+│   └── global.scss
+├── android/                       # Projet natif Android (Capacitor)
+├── resources/                     # Icônes & splash screens
+├── capacitor.config.ts            # Configuration Capacitor (appId: com.novo.app)
+├── angular.json
+└── package.json
 ```
 
-## Integrate with your tools
+---
 
-* [Set up project integrations](https://gitlab.com/mediasoft1/novopharma/-/settings/integrations)
+## 🚀 Installation
 
-## Collaborate with your team
+### Prérequis
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+| Outil | Version recommandée |
+|-------|---------------------|
+| **Node.js** | ≥ 18 LTS |
+| **npm** | ≥ 9 |
+| **Ionic CLI** | `npm i -g @ionic/cli` |
+| **Android Studio** | Pour le build natif Android (optionnel) |
 
-## Test and Deploy
+### Installation des dépendances
 
-Use the built-in continuous integration in GitLab.
+```bash
+# Cloner le dépôt
+git clone https://github.com/chernien/novopharma-App.git
+cd novopharma-App
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+# Installer les dépendances
+npm install
+```
 
-***
+### Lancement en développement
 
-# Editing this README
+```bash
+# Serveur de développement (http://localhost:4200)
+npm start
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+# ou avec live-reload Ionic
+ionic serve
+```
 
-## Suggestions for a good README
+### Build de production
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+```bash
+npm run build
+```
 
-## Name
-Choose a self-explaining name for your project.
+Les fichiers compilés sont générés dans le dossier `www/`.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+### Tests & qualité
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+```bash
+npm test        # Tests unitaires (Karma / Jasmine)
+npm run lint    # Analyse statique (ESLint)
+```
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+---
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## 📱 Build & déploiement mobile
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+```bash
+# Construire le bundle web
+npm run build
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+# Synchroniser avec le projet natif
+npx cap sync android
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+# Ouvrir dans Android Studio
+npx cap open android
+```
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+> ⚙️ Configuration native : `appId = com.novo.app`, `appName = MSL` (voir `capacitor.config.ts`).
+> Le backend ciblé est défini dans `src/environments/environment.ts`.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+---
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+## 📐 Responsive & expérience mobile
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+- **Mobile-first** : interface construite avec les composants adaptatifs Ionic (`ion-grid`, `ion-content`, safe-areas).
+- **Navigation par onglets** fixe en bas d'écran — ergonomie pouce-friendly pour usage à une main sur le terrain.
+- **PWA-ready** grâce à `@ionic/pwa-elements`, exploitable aussi sur navigateur.
+- **Gestion du clavier et de la status bar** native (Capacitor Keyboard / StatusBar) pour éviter les chevauchements d'UI.
+- **Listes performantes** sur gros volumes via défilement infini (`ngx-infinite-scroll`).
 
-## License
-For open source projects, say how it is licensed.
+---
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+## 💡 Points techniques intéressants
+
+> Cette section met en lumière les choix d'ingénierie qui distinguent le projet.
+
+### 🧩 Architecture
+- **Lazy-loading systématique** des pages via `loadChildren` + `PreloadAllModules` → démarrage rapide, chargement à la demande.
+- Séparation nette **pages / composants / pipes / services**, logique métier isolée dans la couche service.
+
+### 🌐 Résilience réseau (offline-first)
+- `CommandeQueueService` implémente une **file de synchronisation par chunks** : chaque lot de commande est persisté avant envoi, marqué individuellement comme envoyé, et **les sessions interrompues sont reprises automatiquement** — aucune commande perdue malgré une coupure réseau.
+- `NetworkService` expose l'état de connexion en flux réactif et fournit une primitive `waitForOnline()`.
+
+### ⚡ Gestion d'état réactive
+- Le panier est piloté par un **`BehaviorSubject` RxJS** avec persistance `localStorage` : tout composant abonné est notifié en temps réel des changements.
+
+### 📷 Capacités device natives
+- Intégration de la **géolocalisation**, de la **caméra**, du **scan code-barres** et de l'**OCR** (tesseract.js) directement dans le parcours de saisie.
+
+### 🔍 Recherche & filtrage
+- **Pipes Angular dédiés** (article, client, commande, gift, recommande) pour un filtrage déclaratif et réutilisable des listes.
+
+### 🧪 Qualité
+- Configuration **ESLint** (Angular ESLint + TypeScript ESLint) et **tests unitaires** Karma/Jasmine en place.
+
+---
+
+## 👤 Auteur
+
+
+
+| **LinkedIn** | _[https://linkedin.com/in/votre-profil](https://www.linkedin.com/in/amine-cherni/)_ |
+
+
+---
+
+<div align="center">
+
+*Développé avec Ionic, Angular & Capacitor.*
+
+</div>
