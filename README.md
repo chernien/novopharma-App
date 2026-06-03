@@ -285,14 +285,6 @@ npx cap open android
 
 ---
 
-## 👤 Auteur
-
-
-
-| **LinkedIn** | _[https://linkedin.com/in/votre-profil](https://www.linkedin.com/in/amine-cherni/)_ |
-
-
----
 
 <div align="center">
 
